@@ -125,6 +125,9 @@ public class GenericArtifactoryFeedDocument {
     }
 
     private Version getLatestVersion(){
+        if (versionsList.isEmpty()) {
+            return null;
+        }
         return versionsList.get(0);
     }
 
@@ -192,6 +195,8 @@ public class GenericArtifactoryFeedDocument {
     }
 
     private boolean isWithinBounds(Version currentVersion) {
+        if (currentVersion == null) return false;
+        
         if(lowerBoundVersion != null && lowerBoundVersion.compareTo(currentVersion) > 0 ){
             return false;
         }
