@@ -47,7 +47,7 @@ public class GenericArtifactoryPoller implements PackageMaterialPoller {
         String message = String.format("latestModificationSince called with packageName %s, for repo: %s",
                 packageConfig.get(GenericArtifactoryPackageConfig.PACKAGE_ID).getValue(),
                 repoConfig.get(RepoUrl.REPO_URL).getValue());
-        LOGGER.info(message);
+        LOGGER.debug(message);
 
         validateConfig(repoConfig, packageConfig);
 
@@ -101,7 +101,7 @@ public class GenericArtifactoryPoller implements PackageMaterialPoller {
     public Result checkConnectionToPackage(PackageConfiguration packageConfigs, RepositoryConfiguration repoConfigs) {
         Result response = checkConnectionToRepository(repoConfigs);
         if (!response.isSuccessful()) {
-            LOGGER.info(response.getMessagesForDisplay());
+            LOGGER.debug(response.getMessagesForDisplay());
             return response;
         }
         PackageRevision packageRevision = getLatestRevision(packageConfigs, repoConfigs);
@@ -126,7 +126,7 @@ public class GenericArtifactoryPoller implements PackageMaterialPoller {
 
     public PackageRevision poll(GenericArtifactoryParams params) {
         String url = params.getQuery();
-        LOGGER.info(String.format("params received: %s", params.toString()));
+        LOGGER.debug(String.format("params received: %s", params.toString()));
 
         GenericArtifactoryFeedDocument artifactoryFeedDocument = new GenericArtifactoryFeedDocument(url, params);
         PackageRevision packageRevision = artifactoryFeedDocument.getPackageRevision(params.isLastVersionKnown());

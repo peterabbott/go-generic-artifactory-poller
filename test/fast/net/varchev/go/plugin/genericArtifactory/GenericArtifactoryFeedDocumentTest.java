@@ -5,6 +5,7 @@ import com.tw.go.plugin.util.RepoUrl;
 import net.varchev.go.plugin.genericArtifactory.config.GenericArtifactoryPackageConfig;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -30,4 +31,22 @@ public class GenericArtifactoryFeedDocumentTest {
         assertThat(result.getDataFor(GenericArtifactoryPackageConfig.PACKAGE_LOCATION), is("http://artifactory.example.com/artifactory/repo-id/Path/To/Artifact/Artifact.1.8.26.1.zip"));
         assertThat(result.getDataFor(GenericArtifactoryPackageConfig.PACKAGE_VERSION), is("1.8.26.1"));
     }
+
+    @Test
+    @Ignore("integration test")
+    public void shouldCreatePackageRevisionForParent() throws Exception {
+        String fileContent = FileUtils.readFileToString(new File("test" + File.separator + "fast" + File.separator + "artifactory-good-parent.json"));
+        JSONObject doc = new JSONObject(fileContent);
+
+        GenericArtifactoryParams params = new GenericArtifactoryParams(RepoUrl.create("http://192.168.99.100:8081/artifactory", null, null),
+                "libs-release", "commons-io/commons-io", "commons-io", "2.0", null, null);
+        PackageRevision result = new GenericArtifactoryFeedDocument(doc,params).getPackageRevision(false);
+        assertThat(result.getUser(), is("userName"));
+        assertThat(result.getRevision(), is("2.4"));
+
+        assertThat(result.getTimestamp(), is(javax.xml.bind.DatatypeConverter.parseDateTime(("2014-08-27T10:40:47.567+03:00")).getTime()));
+        assertThat(result.getDataFor(GenericArtifactoryPackageConfig.PACKAGE_LOCATION), is("http://artifactory.example.com/artifactory/repo-id/Path/To/Artifact/Artifact.1.8.26.1.zip"));
+        assertThat(result.getDataFor(GenericArtifactoryPackageConfig.PACKAGE_VERSION), is("2.4"));
+    }
+
 }

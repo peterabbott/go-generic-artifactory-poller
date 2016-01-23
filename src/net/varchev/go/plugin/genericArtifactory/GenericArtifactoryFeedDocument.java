@@ -71,7 +71,7 @@ public class GenericArtifactoryFeedDocument {
             HttpEntity entity = response.getEntity();
             String responseBody = EntityUtils.toString(entity);
 
-            LOGGER.info(responseBody);
+            LOGGER.debug(responseBody);
 
             JSONObject result = new JSONObject(responseBody);
 
@@ -97,7 +97,7 @@ public class GenericArtifactoryFeedDocument {
         String packagePath = feedObject.getString("path");
         String packageUri = versionDetails.getString("uri");
         String result = repoUrl.concat("/" + repoId).concat(packagePath).concat(packageUri);
-        LOGGER.info("package location : " + result);
+        LOGGER.debug("package location : " + result);
         return result;
     }
 
@@ -144,26 +144,51 @@ public class GenericArtifactoryFeedDocument {
             JSONObject file = versions.getJSONObject(i);
             String fileName = file.getString("uri").substring(1);
             boolean isFolder = file.getBoolean("folder");
-            if(!fileName.startsWith(packageId) || isFolder)
+
+            // needs to be redone, but take into account 1 nested level of versioning
+            if (isFolder)
             {
-                continue;
-            }
-            int lastDot = fileName.lastIndexOf(".");
-            LOGGER.info("lastDot index : " + lastDot);
-            LOGGER.info("fileName  : " + fileName);
-            LOGGER.info("packageId length : " + packageId.length());
-            String versionString  = fileName.substring(packageId.length() + 1, lastDot);
-            LOGGER.info("versionString  : " + versionString);
-            Version currentVersion = new Version(versionString);
-            if(isWithinBounds(currentVersion)) {
-                LOGGER.info("is withing bounds  : " + currentVersion);
-                versionStringMap.put(currentVersion, versionString);
-                versionsList.add(currentVersion);
-                versionJSONObjectMap.put(currentVersion, file);
+                GenericArtifactoryParams nestedParams =
+                        new GenericArtifactoryParams(
+                                params.getRepoUrl(),
+                                feedObject.getString("repo"),
+                                feedObject.getString("path").substring(1) + file.getString("uri"),
+                                params.getPackageId(),
+                                params.getPollVersionFrom(),
+                                params.getPollVersionTo(),
+                                params.getPreviouslyKnownRevision()
+                                );
+
+                GenericArtifactoryFeedDocument nested = new GenericArtifactoryFeedDocument(nestedParams.getQuery(), nestedParams);
+                nested.populateVersionsList();
+
+                Version version = nested.getLatestVersion();
+                if (isWithinBounds(version)) {
+                    LOGGER.debug("is withing bounds  : " + version);
+                    versionStringMap.put(version, version.getVersion());
+                    versionsList.add(version);
+                    versionJSONObjectMap.put(version, file);
+                }
+
+            } else if (fileName.startsWith(packageId)) {
+                int lastDot = fileName.lastIndexOf(".");
+
+                LOGGER.debug("lastDot index : " + lastDot);
+                LOGGER.debug("fileName  : " + fileName);
+                LOGGER.debug("packageId length : " + packageId.length());
+                String versionString = fileName.substring(packageId.length() + 1, lastDot);
+                LOGGER.debug("versionString  : " + versionString);
+                Version currentVersion = new Version(versionString);
+                if (isWithinBounds(currentVersion)) {
+                    LOGGER.info("is withing bounds  : " + currentVersion);
+                    versionStringMap.put(currentVersion, versionString);
+                    versionsList.add(currentVersion);
+                    versionJSONObjectMap.put(currentVersion, file);
+                }
             }
         }
-        Collections.sort(versionsList, Collections.reverseOrder());
 
+        Collections.sort(versionsList, Collections.reverseOrder());
     }
 
     private boolean isWithinBounds(Version currentVersion) {
@@ -182,7 +207,7 @@ public class GenericArtifactoryFeedDocument {
     public PackageRevision getPackageRevision(boolean lastVersionKnown) {
 
         if(versionsList.isEmpty()){
-            if(lastVersionKnown) return null;
+            if (lastVersionKnown) return null;
             else throw new GenericArtifactoryException("No such package found");
         }
         PackageRevision result = new PackageRevision(getPackageLabel(), getPublishedDate(), getAuthor());

@@ -69,6 +69,10 @@ public class GenericArtifactoryParams {
         return lastKnownVersion.getDataFor(GenericArtifactoryPackageConfig.PACKAGE_VERSION);
     }
 
+    public PackageRevision getPreviouslyKnownRevision() {
+        return lastKnownVersion;
+    }
+
     public String getQuery() {
         StringBuilder query = new StringBuilder();
         query.append(((HttpRepoURL) repoUrl).getUrlWithBasicAuth());
@@ -78,6 +82,4 @@ public class GenericArtifactoryParams {
 
         return query.toString();
     }
-
-
 }

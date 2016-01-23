@@ -1,0 +1,17 @@
+{
+  "repo" : "libs-release",
+  "path" : "/commons-io/commons-io",
+  "created" : "2016-01-15T21:28:48.969Z",
+  "createdBy" : "anonymous",
+  "lastModified" : "2016-01-15T21:28:48.969Z",
+  "modifiedBy" : "anonymous",
+  "lastUpdated" : "2016-01-15T21:28:48.969Z",
+  "children" : [ {
+    "uri" : "/2.3",
+    "folder" : true
+  }, {
+    "uri" : "/2.4",
+    "folder" : true
+  } ],
+  "uri" : "http://artifactory:8081/artifactory/api/storage/libs-release/commons-io/commons-io"
+}
